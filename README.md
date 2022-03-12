@@ -12,3 +12,7 @@ The following packages are required:
 * jq
 
 
+Credits:
+[Everyone over at the Flameshot Organization for actually creating Flameshot](https://flameshot.org/)
+[Tanner Reynolds / ShareS Project for the flameshot example script](https://github.com/TannerReynolds/ShareX-Upload-Server)
+[DryByte for helping me with jq](https://github.com/DryByte)
