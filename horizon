@@ -13,6 +13,5 @@ fi
 image_url=$(curl -X POST -F "file=@"$temp_file -H "Authorization: Bearer "$auth -v "$url" 2>/dev/null)
 echo $image_url > /tmp/upload.json
 
-cat /tmp/upload.json | jq -r ".data" > /tmp/upload2.json
-cat /tmp/upload2.json | jq -r ".fileLink" | xclip -sel c
+cat /tmp/upload.json | jq -r ".data.fileLink" | xclip -sel c
 rm $temp_file
