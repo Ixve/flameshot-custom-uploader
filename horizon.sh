@@ -10,8 +10,5 @@ if [[ $(file --mime-type -b $temp_file) != "image/png" ]]; then
   notify-send "Screenshot aborted" -a "Flameshot" && exit 1
 fi
 
-image_url=$(curl -X POST -F "file=@"$temp_file -H "Authorization: Bearer "$auth -v "$url" 2>/dev/null)
-echo $image_url > /tmp/upload.json
-
-cat /tmp/upload.json | jq -r ".data.fileLink" | xclip -sel c
+curl -X POST -F "file=@"$temp_file -H "Authorization: Bearer "$auth -v "$url" 2>/dev/null | jq -r ".data.fileLink" | xclip -sel c
 rm $temp_file
