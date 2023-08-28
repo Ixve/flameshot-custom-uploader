@@ -1,9 +1,16 @@
 #!/bin/bash -e
 
-auth="API KEY HERE."
-url="https://api.e-z.host/files"
+if [ ! -f ~/.E-Z/settings.sh ]; then
+    read -p "Input API URI: " url
+    read -p "Input API Key: " auth
+    rm -rf ~/.E-Z && mkdir ~/.E-Z
+    echo 'url="'$url'"' > ~/.E-Z/settings.sh && echo 'auth="'$auth'"' >> ~/.E-Z/settings.sh
+    echo 'temp_file="/tmp/screenshot.png"' >> ~/.E-Z/settings.sh && echo 'response_file="/tmp/upload.json"' >> ~/.E-Z/settings.sh
+    notify-send "Settings updated" -a "Flameshot"
+    exit 1
+fi
 
-temp_file="/tmp/screenshot.png"
+source ~/.E-Z/settings.sh
 flameshot gui -r > $temp_file
 
 if [[ $(file --mime-type -b $temp_file) != "image/png" ]]; then
@@ -12,19 +19,18 @@ if [[ $(file --mime-type -b $temp_file) != "image/png" ]]; then
 fi
 
 image_url=$(curl -X POST -F "file=@"$temp_file -H "key: "$auth -v "$url" 2>/dev/null)
-echo $image_url > /tmp/upload.json
-response_file="/tmp/upload.json"
+echo $image_url > $response_file
 
-if ! jq -e . >/dev/null 2>&1 < /tmp/upload.json; then
+if ! jq -e . >/dev/null 2>&1 < $response_file; then
     notify-send "Error occurred while uploading. Please try again later." -a "Flameshot"
     rm $temp_file
     rm $response_file
     exit 1
 fi
 
-success=$(cat /tmp/upload.json | jq -r ".success")
+success=$(cat $response_file | jq -r ".success")
 if [[ "$success" != "true" ]] || [[ "$success" == "null" ]]; then
-    error=$(cat /tmp/upload.json | jq -r ".error")
+    error=$(cat $response_file | jq -r ".error")
     if [[ "$error" == "null" ]]; then
         notify-send "Error occurred while uploading. Please try again later." -a "Flameshot"
         rm $temp_file
@@ -38,6 +44,6 @@ if [[ "$success" != "true" ]] || [[ "$success" == "null" ]]; then
     fi
 fi
 
-cat /tmp/upload.json | jq -r ".imageUrl" | xclip -sel c
+cat $response_file | jq -r ".imageUrl" | xclip -sel c
 notify-send "Image URL copied to clipboard" -a "Flameshot" -i $temp_file
 rm $temp_file
